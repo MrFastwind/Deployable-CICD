@@ -1,0 +1,48 @@
+services:
+  git-server:
+    image: gitea/gitea:1.22.6
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__actions__enabled=true
+    restart: always
+    networks:
+      - gitea
+    volumes:
+      #- ./services/gitea/:/data/gitea/
+      - ./services/gitea/conf/:/data/gitea/conf/
+      - ./services/gitea/db/:/data/gitea/db/
+      #- /data/gitea/home
+      #- /data/ssh
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      # - "222:22"
+
+  runner:
+    image: gitea/act_runner:0.2.11
+    networks:
+      - gitea
+    depends_on:
+      - git-server
+    environment:
+      CONFIG_FILE: /config/config.yaml
+      GITEA_INSTANCE_URL: "http://git-server:3000"
+      GITEA_RUNNER_NAME: "gitea-runner"
+      GITEA_RUNNER_LABELS: "ubuntu-latest,linux,docker"
+    env_file:
+      - runner.env
+    volumes:
+      # - ./services/runner/.runner:/data/.runner
+      - ./services/runner/config/:/config/
+      - ./services/runner/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  gitea_ssh:
+
+networks:
+  gitea:
+    external: false

@@ -1,4 +1,8 @@
-STACK_FILES:= -f docker-compose.yml
+# Find all docker-compose*.yml files in the current directory.
+# The files are sorted alphabetically, so the order of the files is well-defined.
+# The printf is used to construct the argument for docker-compose, which is something
+# like "-f docker-compose.yml -f docker-compose.override.yml".
+STACK_FILES:=$(shell find . -name "docker-compose*.yml" -print0 | sort -z | xargs -0 -I {} printf "-f %s " {})
 TARGETS := $(shell docker-compose $(STACK_FILES) config --services)
 
 all: destroy deploy status
@@ -10,7 +14,8 @@ status:
 
 # Start/stop/restart a service
 .PHONY: $(TARGETS)
-$(TARGETS): %: stop-% start-%
+$(TARGETS): %:
+	make stop-$* start-$*
 
 # Start a service
 .PHONY: start-%

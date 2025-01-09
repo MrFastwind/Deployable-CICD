@@ -1,0 +1,33 @@
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+    volumes:
+      - ./services/registry/data/:/var/lib/registry/
+      - ./services/registry/config/:/etc/docker/registry/
+    ports:
+      - "5000:5000"
+    networks:
+      - registry-net
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry-ui
+    environment:
+      - REGISTRY_TITLE=Production Registry
+      - REGISTRY_URL=http://localhost:5000
+      - REGISTRY_AUTH= false
+      - DELETE_IMAGES=true
+      - SINGLE_REGISTRY=true
+    ports:
+      - "8080:80"
+    depends_on:
+      - registry
+    networks:
+      - registry-net
+
+networks:
+  registry-net:
+    external: false

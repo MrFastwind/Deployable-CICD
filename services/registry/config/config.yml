@@ -1,0 +1,29 @@
+version: 0.1
+log:
+  level: info
+  fields:
+    service: registry
+
+storage:
+  delete:
+    enabled: true
+  filesystem:
+    rootdirectory: /var/lib/registry
+
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+    # Allowing CORS to '*' is not safe in a production environment, but for the simulation is ok
+    Access-Control-Allow-Origin: ["*"]
+    Access-Control-Allow-Methods: ["HEAD", "GET", "OPTIONS", "DELETE"]
+    Access-Control-Allow-Headers: ["Authorization", "Accept", "Cache-Control"]
+    Access-Control-Max-Age: [1728000]
+    Access-Control-Allow-Credentials: [true]
+    Access-Control-Expose-Headers: ["Docker-Content-Digest"]
+
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3

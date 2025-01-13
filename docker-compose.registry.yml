@@ -11,6 +11,7 @@ services:
       - "5000:5000"
     networks:
       - registry-net
+      - gitea
 
   registry-ui:
     image: joxit/docker-registry-ui:latest
@@ -30,4 +31,6 @@ services:
 
 networks:
   registry-net:
+    external: false
+  gitea:
     external: false

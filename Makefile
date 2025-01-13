@@ -3,14 +3,15 @@
 # The printf is used to construct the argument for docker-compose, which is something
 # like "-f docker-compose.yml -f docker-compose.override.yml".
 STACK_FILES:=$(shell find . -name "docker-compose*.yml" -print0 | sort -z | xargs -0 -I {} printf "-f %s " {})
-TARGETS := $(shell docker-compose $(STACK_FILES) config --services)
+TARGETS:= $(shell docker-compose $(STACK_FILES) config --services)
+COMPOSE_ARGS:=-p cicd $(STACK_FILES)
 
 all: destroy deploy status
 
 # Show the status of the containers
 .PHONY: status
 status:
-	docker-compose $(STACK_FILES) ps
+	docker-compose $(COMPOSE_ARGS) ps
 
 # Start/stop/restart a service
 .PHONY: $(TARGETS)
@@ -20,20 +21,32 @@ $(TARGETS): %:
 # Start a service
 .PHONY: start-%
 start-%:
-	docker-compose $(STACK_FILES) up -d $*
+	docker-compose $(COMPOSE_ARGS) up -d $*
 
 # Stop a service
 .PHONY: stop-%
 stop-%:
-	docker-compose $(STACK_FILES) down $*
+	docker-compose $(COMPOSE_ARGS) down $*
 
 # Deploy the stack (up and start all services)
 .PHONY: deploy
 deploy: destroy
-	docker-compose $(STACK_FILES) up -d
+	docker-compose $(COMPOSE_ARGS) up -d
 
 # Destroy the stack (stop and delete all services)
 .PHONY: destroy
 destroy:
-	docker-compose $(STACK_FILES) down
+	docker-compose $(COMPOSE_ARGS) down
 
+
+.PHONY: load
+load: 
+	docker-compose $(COMPOSE_ARGS) down git-server
+	docker-compose $(COMPOSE_ARGS) run --rm git-server sh -c "tar -xzf /backup/backup.tar.gz -C /"
+	docker-compose $(COMPOSE_ARGS) down git-server
+
+.PHONY: save
+save:
+	docker-compose $(COMPOSE_ARGS) down git-server
+	docker-compose $(COMPOSE_ARGS) run --rm git-server sh -c "tar -czf /backup/backup.tar.gz /data"
+	docker-compose $(COMPOSE_ARGS) down git-server

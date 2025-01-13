@@ -6,12 +6,13 @@ services:
       - USER_UID=1000
       - USER_GID=1000
       - GITEA__actions__enabled=true
+      - GITEA__mailer__ENABLED=false
     restart: always
     networks:
       - gitea
     volumes:
-      - ./services/gitea/conf/:/data/gitea/conf/
-      - ./services/gitea/db/:/data/gitea/db/
+      - ./backup/:/backup/
+      - gitea-data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -41,6 +42,10 @@ services:
       - ./services/runner/config/:/config/
       - ./services/runner/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  gitea-data:
+    driver: local
 
 networks:
   gitea:

@@ -26,7 +26,7 @@ start-%:
 # Stop a service
 .PHONY: stop-%
 stop-%:
-	docker-compose $(COMPOSE_ARGS) down $*
+	docker-compose $(COMPOSE_ARGS) up --scale $*=0 $*
 
 # Deploy the stack (up and start all services)
 .PHONY: deploy
@@ -41,12 +41,12 @@ destroy:
 
 .PHONY: load
 load: 
-	docker-compose $(COMPOSE_ARGS) down git-server
+	docker-compose $(COMPOSE_ARGS) up --scale git-server=0 git-server
 	docker-compose $(COMPOSE_ARGS) run --rm git-server sh -c "tar -xzf /backup/backup.tar.gz -C /"
-	docker-compose $(COMPOSE_ARGS) down git-server
+	docker-compose $(COMPOSE_ARGS) up --scale git-server=0 git-server
 
 .PHONY: save
 save:
-	docker-compose $(COMPOSE_ARGS) down git-server
+	docker-compose $(COMPOSE_ARGS) up --scale git-server=0 git-server
 	docker-compose $(COMPOSE_ARGS) run --rm git-server sh -c "tar -czf /backup/backup.tar.gz /data"
-	docker-compose $(COMPOSE_ARGS) down git-server
+	docker-compose $(COMPOSE_ARGS) up --scale git-server=0 git-server

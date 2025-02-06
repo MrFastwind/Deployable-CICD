@@ -8,7 +8,7 @@ def find_stack_files():
     result = subprocess.run(
         [
             "powershell", "-Command",
-            "Get-ChildItem -Path . -Filter 'docker-compose*.yml' | Sort-Object Name | ForEach-Object { '-f ' + $_.FullName }"
+            "Get-ChildItem -Path . -Filter 'docker-compose*.yml' | Sort-Object Name | ForEach-Object { '-f ' + '\"' + $_.FullName + '\"' }"
         ],
         stdout=subprocess.PIPE,
         check=True
